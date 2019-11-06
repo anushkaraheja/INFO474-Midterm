@@ -7,6 +7,7 @@
     let currGeneration = 'All';
     let currLegendary = 'All';
     let colors = '';
+    let legendContainer = '';
 
     const measurements = {
         width: 800,
@@ -20,6 +21,12 @@
             .attr('height', measurements.height)
             .attr('width', measurements.width)
         
+        legendContainer = d3.select('#legend')
+            .append('svg')
+            .attr('height', 900)
+            .attr('width', 300)
+
+        
         // Load data
         d3.csv('data/pokemon.csv')
             .then((csvdata) => {
@@ -29,13 +36,14 @@
             .then(() => {
 
                 colors = d3.scaleOrdinal()
-                    .domain([...new Set(data.map((row) => row['Type 1']))])
-                    .range([ '#4E79A7', '#A0CBE8', '#F28E2B', '#FFBE&D', '#59A14F', '#8CD17D', '#B6992D', '#499894'
-                    , '#86BCB6', '#86BCB7', '#E15759', '#FF9D9A', '#79706E', '#BAB0AC', '#D37295']);
+                .domain([...new Set(data.map((row) => row['Type 1']))])
+                .range([ '#4E79A7', '#A0CBE8', '#F28E2B', '#FFBE&D', '#59A14F', '#8CD17D', '#B6992D', '#499894'
+                , '#86BCB6', '#86BCB7', '#E15759', '#FF9D9A', '#79706E', '#BAB0AC', '#D37295']);
+        
 
                 // make legend
 
-                d3.select('#legend')
+                legendContainer.selectAll('mycircles')
                     .data([...new Set(data.map((row) => row['Type 1']))])
                     .enter()
                     .append("circle")
@@ -43,7 +51,17 @@
                     .attr("cy", function(d,i){ return 100 + i*20}) // 100 is where the first dot appears. 25 is the distance between dots
                     .attr("r", 5)
                     .style("fill", function(d){ return colors(d)});
-            
+
+                legendContainer.selectAll('mylabels')
+                    .data([...new Set(data.map((row) => row['Type 1']))])
+                    .enter()
+                    .append("text")
+                    .attr("x", 120)
+                    .attr("y", function(d,i){ return 100 + i*20}) // 100 is where the first dot appears. 25 is the distance between dots
+                    .style("fill", "black")
+                    .text(function(d){ return d})
+                    .attr("text-anchor", "left")
+                    .style("alignment-baseline", "middle")
 
                 makeScatterPlot(currGeneration, currLegendary);
                 
@@ -117,7 +135,6 @@
 
    
     function plotData(funcs) {
-        console.log('in');
         // get special defence data as array
         let spDef_data = data.map((row) => +row['Sp. Def'])
         let spDef_limits = d3.extent(spDef_data)
@@ -125,6 +142,8 @@
         // mapping functions
         let xMap = funcs.x;
         let yMap = funcs.y;
+
+       
 
         // make tooltip
         let div = d3.select('body').append('div')
@@ -143,7 +162,7 @@
             .on('mouseover', (d) => {
                 div.transition()
                     .duration(200)
-                    .style('opacity', 0.9);
+                    .style('opacity', 1);
                 div.html('<pre>' +
                         d['Name'] + '<br/>' +
                         d['Type 1'] + '<br/>' +
